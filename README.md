@@ -12,6 +12,6 @@ In an attempt to make the results of our model more interesting, we programmed a
 
 While researching and training our model, we attempted to see if we could improve performance with Principal Component Analysis. The hope of this decomposition was to see if our models would generalize better. We found that while our models trained faster, our models' performance did not improve.
 
-In another groups presentation of the same problem, they made use of a [Histogram of Oriented Gradients (HOG)](https://towardsdatascience.com/hog-histogram-of-oriented-gradients-67ecd887675f) algorithm. This algorithm assisted with edge detection and toted higher accuracies than our model. After seeing their success with implementing HOG, I thought I'd like to see what this feature decomposition might do for our HanDi.
+In another group's presentation of the same digit recognition problem, they made use of a [Histogram of Oriented Gradients (HOG)](https://towardsdatascience.com/hog-histogram-of-oriented-gradients-67ecd887675f) algorithm. This algorithm assisted with edge detection and toted higher accuracies than our models. After seeing their success with implementing HOG, I thought I'd like to see what this feature decomposition might do for our HanDi.
 
-So that's what this is, this is HOG wild HanDi.
+So that's what this is, **this is HOG wild HanDi**.
