@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm import tqdm
 
 """
 This file contains an implementation of a multi-class multi-layer perceptron
@@ -114,7 +115,7 @@ def mlp_objective(model, data, labels, loss_function):
 
     # compute gradient for each layer
     for i in range(num_layers):
-        layer_gradients[i] = (layer_delta[i] * activation_derivatives[i]).dot(activation_derivatives[i].transpose())
+        layer_gradients[i] = (layer_delta[i] * activation_derivatives[i]).dot(activations[i].transpose())
 
     return layer_gradients
 
@@ -152,7 +153,7 @@ def mlp_train(data, labels, params, model=None):
         # create output layer
         model['weights'].append(.1 * np.random.randn(len(set(labels)), num_hidden_units[-1])) # maybe consider changing how we know how many class types we have
 
-        model['activation_functions'] = params['activation_function']
+        model['activation_function'] = params['activation_function']
         model['lambda'] = params['lambda']
 
     loss_function = params['loss_function']
@@ -161,7 +162,7 @@ def mlp_train(data, labels, params, model=None):
     learning_rate = params['learning_rate']
 
     # Training
-    for _ in range(params['max_iter']):
+    for i in range(params['max_iter']):
         grad = mlp_objective(model, data, labels, loss_function)
 
         total_change = 0
