@@ -1,16 +1,15 @@
 """
 This file contains the methods used to calculate the Histogram of Oriented Gradients (HOG) for a given image.
 """
-
 import numpy as np
 
 def hog_horizontal_gradient(image):
     """
     Calculate the horizontal gradient of a given image.
 
-    :param image: ndarray of pixel values
+    :param image: ndarray of feature values
     :type image: ndarray
-    :return: ndarray of gradient values for each pixel
+    :return: ndarray of gradient values for each feature
     :rtype: ndarray
     """
     n_row, n_col = image.shape
@@ -26,9 +25,9 @@ def hog_vertical_gradient(image):
     """
     Calculate the vertical gradient of a given image.
 
-    :param image: ndarray of pixel values
+    :param image: ndarray of feature values
     :type image: ndarray
-    :return: ndarray of gradient values for each pixel
+    :return: ndarray of gradient values for each feature
     :rtype: ndarray
     """
     n_row, n_col = image.shape
@@ -42,13 +41,13 @@ def hog_vertical_gradient(image):
 
 def hog_gradient_magnitudes(horizontal_gradient, vertical_gradient):
     """
-    Calculate the magnitude of pixel values based on horizontal and vertical gradients.
+    Calculate the magnitude of feature values based on horizontal and vertical gradients.
 
     :param horizontal_gradient: ndarray of gradient values calculated along the x axis
     :type horizontal_gradient: ndarray
     :param vertical_gradient: ndarray of gradient values calculated along the y axis
     :type vertical_gradient: ndarray
-    :return: ndarray of magnitudes for each pixel.
+    :return: ndarray of magnitudes for each feature
     :rtype: ndarray
     """
     n_row, n_col = horizontal_gradient.shape
@@ -63,13 +62,13 @@ def hog_gradient_magnitudes(horizontal_gradient, vertical_gradient):
 
 def hog_gradient_directions(horizontal_gradient, vertical_gradient):
     """
-    Calculate the gradient direction of pixel values based on horizontal and vertical gradients.
+    Calculate the gradient direction of feature values based on horizontal and vertical gradients.
 
     :param horizontal_gradient: ndarray of gradient values calculated along the x axis
     :type horizontal_gradient: ndarray
     :param vertical_gradient: ndarray of gradient values calculated along the y axis
     :type vertical_gradient: ndarray
-    :return: ndarray of directions for each pixel.
+    :return: ndarray of directions in degrees for each feature.
     :rtype: ndarray
     """
     n_row, n_col = horizontal_gradient.shape
@@ -83,31 +82,88 @@ def hog_gradient_directions(horizontal_gradient, vertical_gradient):
     return result
 
 def hog_histogram(magnitudes, directions, bins):
+    """
+    Calculates the frequencies of the given directions.
+
+    :param magnitudes: ndarray of magnitudes
+    :type magnitudes: ndarray
+    :param directions: ndarray of directions in degrees
+    :type directions: ndarray
+    :param bins: the number of bins to chunk 180 degrees
+    :type bins: int
+    :return: one dimensional array of frequencies for each bin
+    :rtype: ndarray
+    """
     hist = np.zeros(bins)
     n_row, n_col = magnitudes.shape
     step = 180 // bins
 
     for r in range(n_row):
         for c in range(n_col):
-            bin = int(directions[r, c]) // step
-            hist[bin] += magnitudes[r, c]
+            dir = directions[r, c]
+            mag = magnitudes[r, c]
+
+            lower_bin = int(np.floor(dir / step))
+            upper_bin = int(np.ceil(dir / step))
+
+            lower_dir = lower_bin * step
+            upper_dir = upper_bin * step
+
+            hist[lower_bin] += mag * (1 - (np.abs(dir - lower_dir) / step))
+            hist[upper_bin] += mag * (1 - (np.abs(dir - upper_dir) / step))
 
     return hist
 
-def hog(magnitudes, directions, bins=9, window=4):
+def hog_image_features(magnitudes, directions, bins=9, window=4):
+    """
+    Calculate the frequencies of the given directions in a sliding window.
     
+    :param magnitudes: ndarray of magnitudes
+    :type magnitudes: ndarray
+    :param directions: ndarray of directions in degrees
+    :type directions: ndarray
+    :param bins: the number of bins to chunk 180 degrees
+    :type bins: int
+    :param window: the size of the sliding square window (window x window)
+    :type window: int
+    :return: ndarray of histograms for each window
+    :rtype: ndarray
+    """
     n_row, n_col = magnitudes.shape
     nr = n_row - window
     nc = n_col - window
-    hist = np.zeros((nr * nc, bins))
+    hists = np.zeros((nr * nc, bins))
     counter = 0
 
     for r in range(nr):
         for c in range(nc):
             window_mags = magnitudes[r:r+window, c:c+window]
             window_dirs = directions[r:r+window, c:c+window]
-            hist[counter] = hog_histogram(window_mags, window_dirs, bins)
+            hists[counter] = hog_histogram(window_mags, window_dirs, bins)
             counter += 1
 
-    return hist
+    return hists
 
+
+def hog(image, bins=9, window=4):
+    """
+    Calculate the Histogram of Oriented Gradients for the given image.
+
+    :param image: ndarray of feature values
+    :type image: ndarray
+    :param bins: the number of bins to chunk 180 degrees
+    :type bins: int
+    :param window: the size of the sliding square window (window x window)
+    :type window: int
+    :return: feature values for each window
+    :rtype: ndarray
+    """
+    horz_grad = hog_horizontal_gradient(image)
+    vert_grad = hog_vertical_gradient(image)
+
+    mags = hog_gradient_magnitudes(horz_grad, vert_grad)
+    dirs = hog_gradient_directions(horz_grad, vert_grad)
+
+    features = hog_image_features(mags, dirs, bins, window)
+
+    return features
