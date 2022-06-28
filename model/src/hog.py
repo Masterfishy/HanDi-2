@@ -3,25 +3,21 @@ This file contains the methods used to calculate the Histogram of Oriented Gradi
 """
 import numpy as np
 
-def hog_horizontal_gradient(image, shape):
+def hog_horizontal_gradient(image):
     """
     Calculate the horizontal gradient of a given image.
 
-    :param image: 1 dimensional vector of feature values
+    :param image: ndarray of feature values
     :type image: ndarray
-    :param shape: the dimensions of the image
-    :type shape: tuple
     :return: ndarray of gradient values for each feature
     :rtype: ndarray
     """
-    n_row, n_col = shape
+    n_row, n_col = image.shape
     result = np.zeros(image.shape)
-    index = 0
 
     for r in range(n_row):
         for c in range(1, n_col - 1):
-            result[r + c + index] = image[r + c + index + 1] - image[r + c + index - 1]
-        index += n_col - 1
+            result[r, c] = image[r, c + 1] - image[r, c - 1]
 
     return result
 
